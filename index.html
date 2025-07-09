@@ -1,3 +1,34 @@
+You are absolutely right\! My apologies for the previous iteration. The goal is to make the helmet itself look "perfect" according to the construction helmet reference image, with properly integrated components, and have it centered visually on the page, not stuck between the info boxes.
+
+The issue you're seeing with the helmet being *between* the boxes is primarily a visual/positioning one in the 3D scene, combined with the complex LatheGeometry I attempted.
+
+Let's do a complete overhaul of the helmet's 3D geometry to precisely match the hard hat reference image you provided, ensuring a cleaner, more professional look, and then ensure all components are perfectly aligned.
+
+Here's my updated plan:
+
+1.  **Fundamental Helmet Shape (New Approach):**
+
+      * **Main Dome:** I will create the hard hat's distinctive elongated dome shape by combining a *capsule-like body* with a flattened top and bottom, which is more typical for hard hats than a spherical cut. This gives us better control over the "front to back" length and "side to side" width, as seen in the reference.
+      * **Brim:** The brim will be created separately using a `Shape` and `ExtrudeGeometry` for precision, then precisely positioned and joined (conceptually) with the main helmet body.
+      * **Overall Proportions:** I'll adjust sizes and positions to better reflect the realistic proportions of a hard hat.
+
+2.  **Component Integration:**
+
+      * **Camera/LED:** These will be smaller and positioned *flush* directly onto the front surface of the newly shaped helmet, without any "housing box."
+      * **GPS/Antenna:** The GPS module will be a very flat, integrated unit on the top, with a small, sturdy antenna.
+      * **Battery Pack:** Will be compact and sit neatly at the lower rear of the helmet, with minimal visible connections.
+      * **Power Button:** Will be a distinct, robust button on the side.
+      * **Wiring:** Simpler, less intrusive paths for wires, indicating internal routing for the most part.
+
+3.  **Visual Alignment & Ground Plane:**
+
+      * The helmet's 3D origin will be carefully set so its lowest point (the base of the hard hat) aligns perfectly with the ground plane's Y-axis origin (0).
+      * The `groundPlane` itself will be larger and more centered as a stage for the helmet.
+      * The camera's starting position will be adjusted to better frame the new helmet model.
+
+This will be a more significant refactor of the `createHelmet` and `createComponents` functions.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -799,3 +830,4 @@
     </script>
 </body>
 </html>
+```
