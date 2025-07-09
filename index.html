@@ -1,52 +1,17 @@
-You are absolutely right\! My apologies for the previous iteration. The goal is to make the helmet itself look "perfect" according to the construction helmet reference image, with properly integrated components, and have it centered visually on the page, not stuck between the info boxes.
-
-The issue you're seeing with the helmet being *between* the boxes is primarily a visual/positioning one in the 3D scene, combined with the complex LatheGeometry I attempted.
-
-Let's do a complete overhaul of the helmet's 3D geometry to precisely match the hard hat reference image you provided, ensuring a cleaner, more professional look, and then ensure all components are perfectly aligned.
-
-Here's my updated plan:
-
-1.  **Fundamental Helmet Shape (New Approach):**
-
-      * **Main Dome:** I will create the hard hat's distinctive elongated dome shape by combining a *capsule-like body* with a flattened top and bottom, which is more typical for hard hats than a spherical cut. This gives us better control over the "front to back" length and "side to side" width, as seen in the reference.
-      * **Brim:** The brim will be created separately using a `Shape` and `ExtrudeGeometry` for precision, then precisely positioned and joined (conceptually) with the main helmet body.
-      * **Overall Proportions:** I'll adjust sizes and positions to better reflect the realistic proportions of a hard hat.
-
-2.  **Component Integration:**
-
-      * **Camera/LED:** These will be smaller and positioned *flush* directly onto the front surface of the newly shaped helmet, without any "housing box."
-      * **GPS/Antenna:** The GPS module will be a very flat, integrated unit on the top, with a small, sturdy antenna.
-      * **Battery Pack:** Will be compact and sit neatly at the lower rear of the helmet, with minimal visible connections.
-      * **Power Button:** Will be a distinct, robust button on the side.
-      * **Wiring:** Simpler, less intrusive paths for wires, indicating internal routing for the most part.
-
-3.  **Visual Alignment & Ground Plane:**
-
-      * The helmet's 3D origin will be carefully set so its lowest point (the base of the hard hat) aligns perfectly with the ground plane's Y-axis origin (0).
-      * The `groundPlane` itself will be larger and more centered as a stage for the helmet.
-      * The camera's starting position will be adjusted to better frame the new helmet model.
-
-This will be a more significant refactor of the `createHelmet` and `createComponents` functions.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rugged Smart Construction Helmet - Demo</title>
+    <title>Realistic Smart Construction Helmet</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #3a506b 0%, #1c2a38 100%); /* Deeper, industrial background */
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
         }
 
         #container {
@@ -60,162 +25,142 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
 
         #info {
             position: absolute;
-            top: 25px;
-            left: 25px;
+            top: 20px;
+            left: 20px;
             z-index: 100;
-            background: rgba(0,0,0,0.92); /* Even darker, more opaque */
-            padding: 28px;
-            border-radius: 18px;
-            max-width: 380px;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(8px); /* Stronger blur for modern look */
+            background: rgba(0,0,0,0.85);
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         #info h2 {
-            font-size: 2.1em; /* Larger title */
+            font-size: 1.8em;
             margin-top: 0;
-            border-bottom: 2px solid rgba(255,255,255,0.5);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            color: #98fb98; /* Light green for title */
-            text-shadow: 0 0 10px rgba(152,251,152,0.6);
-        }
-
-        #info ul {
-            list-style: none;
-            padding: 0;
-            margin: 18px 0;
-        }
-
-        #info ul li {
-            margin-bottom: 10px;
-            font-size: 1.05em;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            line-height: 1.4;
-            color: #e0f8e0; /* Off-white for list items */
-        }
-
-        #info p {
-            margin-top: 25px;
-            font-size: 1em;
-            color: #d0d0d0;
+            color: #f39c12;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
         }
 
         #controls {
             position: absolute;
-            bottom: 25px;
-            left: 25px;
+            bottom: 20px;
+            left: 20px;
             z-index: 100;
-            background: rgba(0,0,0,0.92);
-            padding: 22px;
-            border-radius: 18px;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(8px);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        #controls h3 {
-            width: 100%;
-            margin-top: 0;
-            margin-bottom: 18px;
-            color: #98fb98;
-            font-size: 1.7em;
-            border-bottom: 1px solid rgba(255,255,255,0.4);
-            padding-bottom: 8px;
+            background: rgba(0,0,0,0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .control-button {
-            background: linear-gradient(45deg, #4CAF50, #8BC34A); /* Green gradient */
+            background: linear-gradient(45deg, #f39c12, #e67e22);
             color: white;
             border: none;
-            padding: 13px 22px;
-            border-radius: 10px;
+            padding: 12px 18px;
+            margin: 5px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1em;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.4);
-            font-weight: 600;
+            font-weight: bold;
         }
 
         .control-button:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.6);
-            background: linear-gradient(45deg, #388E3C, #689F38);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
         }
 
         #status {
             position: absolute;
-            top: 25px;
-            right: 25px;
+            top: 20px;
+            right: 20px;
             z-index: 100;
-            background: rgba(0,0,0,0.92);
-            padding: 28px;
-            border-radius: 18px;
-            max-width: 320px;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.3);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.85);
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 300px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         #status h3 {
-            font-size: 1.7em;
+            color: #f39c12;
             margin-top: 0;
-            border-bottom: 2px solid rgba(255,255,255,0.4);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            color: #98fb98;
+            margin-bottom: 15px;
         }
 
         .status-item {
-            margin: 18px 0;
-            padding: 15px;
-            border-radius: 10px;
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
             font-size: 1em;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             font-weight: bold;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
         }
 
         .status-disconnected {
-            background: rgba(255, 60, 60, 0.3);
-            border-left: 6px solid #ff3c3c;
+            background: rgba(231, 76, 60, 0.3);
+            border-left: 4px solid #e74c3c;
         }
 
         .status-ready {
-            background: rgba(255, 220, 0, 0.3);
-            border-left: 6px solid #ffd000;
+            background: rgba(243, 156, 18, 0.3);
+            border-left: 4px solid #f39c12;
         }
 
         .status-connected {
-            background: rgba(60, 255, 60, 0.3);
-            border-left: 6px solid #3cff3c;
+            background: rgba(39, 174, 96, 0.3);
+            border-left: 4px solid #27ae60;
         }
 
         .led-indicator {
-            width: 16px; 
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 10px rgba(255,255,255,0.7);
-            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            animation: pulse 2s infinite;
         }
 
-        .led-red { background: #ff0000; box-shadow: 0 0 12px #ff0000; }
-        .led-yellow { background: #ffff00; box-shadow: 0 0 12px #ffff00; }
-        .led-green { background: #00ff00; box-shadow: 0 0 12px #00ff00; }
+        .led-red { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+        .led-yellow { background: #f39c12; box-shadow: 0 0 10px #f39c12; }
+        .led-green { background: #27ae60; box-shadow: 0 0 10px #27ae60; }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.9); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .power-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin-top: 10px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .power-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+        }
+
+        .power-button.on {
+            background: #27ae60;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .power-button.on:hover {
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
         }
 
         #loading {
@@ -224,59 +169,28 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #3a506b 0%, #1c2a38 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             z-index: 200;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 1.8em;
-            color: white;
+            font-size: 1.5em;
         }
 
         .spinner {
-            border: 6px solid rgba(255,255,255,0.4);
-            border-top: 6px solid white;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #f39c12;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1.5s linear infinite;
-            margin-bottom: 30px;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .power-button {
-            background: #e74c3c; /* Brighter red */
-            color: white;
-            border: none;
-            padding: 18px 30px;
-            margin-top: 15px;
-            border-radius: 60px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.2em;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 6px 18px rgba(231, 76, 60, 0.5);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .power-button:hover {
-            transform: scale(1.06) translateY(-3px);
-            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.7);
-        }
-
-        .power-button.on {
-            background: #28a745; /* Bootstrap green */
-            box-shadow: 0 6px 18px rgba(40, 167, 69, 0.5);
-        }
-
-        .power-button.on:hover {
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.7);
         }
     </style>
 </head>
@@ -284,47 +198,48 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
     <div id="container">
         <div id="loading">
             <div class="spinner"></div>
-            <div>Loading Smart Helmet 3D Model...</div>
+            <div>Loading Realistic Construction Helmet...</div>
         </div>
 
         <div id="info">
             <h2>🏗️ Smart Construction Helmet</h2>
-            <p><strong>Integrated Technologies:</strong></p>
+            <p><strong>Realistic Hard Hat Design:</strong></p>
             <ul>
-                <li>📹 <strong>Ruggedized AI Camera</strong> - Real-time hazard detection & site monitoring.</li>
-                <li>🚦 <strong>Multi-Status LED</strong> - Instant operational feedback.</li>
-                <li>🛰️ <strong>High-Precision GPS</strong> - Accurate location tracking & geofencing.</li>
-                <li>🔋 <strong>Extended-Life Smart Battery</strong> - All-day power with intelligent management.</li>
-                <li>🔘 <strong>Tactile Power Control</strong> - Durable, glove-friendly activation.</li>
-                <li>📡 <strong>Industrial WiFi Module</strong> - Reliable site-wide connectivity for data transfer.</li>
+                <li>📹 <strong>Front Camera</strong> - ESP32-CAM integrated</li>
+                <li>🚦 <strong>RGB Status LED</strong> - Connection indicator</li>
+                <li>🛰️ <strong>GPS Module</strong> - Location tracking</li>
+                <li>🔋 <strong>External Battery</strong> - Back-mounted power</li>
+                <li>🔘 <strong>Power Button</strong> - Side-mounted control</li>
+                <li>⚡ <strong>Suspension System</strong> - Professional fit</li>
             </ul>
-            <p><strong>System Status Indicators:</strong></p>
-            <div style="font-size: 0.9em; display: flex; flex-direction: column; gap: 8px; margin-top: 15px; color: #b0e0e6;">
-                <div style="display: flex; align-items: center; gap: 10px;"><span class="led-indicator led-red" style="animation: none; opacity: 1;"></span> **🔴 Disconnected:** Helmet powered off or no network.</div>
-                <div style="display: flex; align-items: center; gap: 10px;"><span class="led-indicator led-yellow" style="animation: none; opacity: 1;"></span> **🟡 Initializing:** Systems booting up, acquiring signals.</div>
-                <div style="display: flex; align-items: center; gap: 10px;"><span class="led-indicator led-green" style="animation: none; opacity: 1;"></span> **🟢 Operational:** All systems online, recording & transmitting data.</div>
+            <p><strong>LED Status:</strong></p>
+            <div style="font-size: 0.9em; margin-top: 10px;">
+                <div>🔴 Red: Disconnected</div>
+                <div>🟡 Yellow: Ready to Connect</div>
+                <div>🟢 Green: Connected & Recording</div>
             </div>
         </div>
 
         <div id="controls">
-            <h3>🎮 Helmet Interaction</h3>
-            <button class="control-button" onclick="toggleRotation()">⏸️ Pause/Resume Rotation</button>
-            <button class="control-button" onclick="resetView()">🔄 Reset Camera View</button>
-            <button class="control-button" onclick="toggleWireframe()">📐 Toggle Wireframe Mode</button>
+            <h3>🎮 Controls</h3>
+            <button class="control-button" onclick="toggleRotation()">⏸️ Pause/Resume</button>
+            <button class="control-button" onclick="resetView()">🔄 Reset View</button>
+            <button class="control-button" onclick="toggleWireframe()">📐 Wireframe</button>
+            <br>
             <button class="power-button" id="powerBtn" onclick="togglePower()">🔌 POWER OFF</button>
         </div>
 
         <div id="status">
-            <h3>📊 Live Helmet Telemetry</h3>
+            <h3>📊 Helmet Status</h3>
             <div class="status-item status-disconnected" id="statusDisplay">
                 <span class="led-indicator led-red"></span>
-                <span>SYSTEM OFFLINE</span>
+                <span>System Offline</span>
             </div>
-            <div style="margin-top: 20px; font-size: 1em; color: #e0e0e0;">
-                <div style="margin-bottom: 10px;"><strong>🛰️ GPS Status:</strong> <span id="gpsStatus">No Signal</span></div>
-                <div style="margin-bottom: 10px;"><strong>📹 Camera Feed:</strong> <span id="cameraStatus">Inactive</span></div>
-                <div style="margin-bottom: 10px;"><strong>🔋 Battery Level:</strong> <span id="batteryStatus">85% (Idle)</span></div>
-                <div><strong>📡 Network Link:</strong> <span id="wifiStatus">Disconnected</span></div>
+            <div style="margin-top: 15px; font-size: 0.9em;">
+                <div><strong>🛰️ GPS:</strong> <span id="gpsStatus">No Signal</span></div>
+                <div><strong>📹 Camera:</strong> <span id="cameraStatus">Standby</span></div>
+                <div><strong>🔋 Battery:</strong> <span id="batteryStatus">85%</span></div>
+                <div><strong>📡 WiFi:</strong> <span id="wifiStatus">Disconnected</span></div>
             </div>
         </div>
     </div>
@@ -332,306 +247,403 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let scene, camera, renderer, helmet;
-        let ledLight, gpsModule, batteryPack, powerButton; // Removed cameraHousing as it's now integrated
-        let groundPlane; 
+        let cameraModule, ledLight, gpsModule, batteryPack, powerButton;
         let isRotating = true;
         let isWireframe = false;
         let isPoweredOn = false;
-        let statusMode = 0; 
+        let statusMode = 0;
 
         function init() {
+            // Scene setup
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x111a2e); 
-            
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(2, 2, 4); // Adjust initial camera position
-            camera.lookAt(0, 0.4, 0); // Point camera slightly lower to see the helmet better
+            scene.background = new THREE.Color(0x2c3e50);
 
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(3, 2, 4);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer setup
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.physicallyCorrectLights = true;
             document.getElementById('container').appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2); 
+            // Enhanced lighting for realistic appearance
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
             scene.add(ambientLight);
 
-            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.7);
-            directionalLight1.position.set(5, 10, 5); 
-            directionalLight1.castShadow = true;
-            directionalLight1.shadow.mapSize.width = 2048;
-            directionalLight1.shadow.mapSize.height = 2048;
-            directionalLight1.shadow.camera.near = 0.5;
-            directionalLight1.shadow.camera.far = 50;
-            directionalLight1.shadow.camera.left = -6;
-            directionalLight1.shadow.camera.right = 6;
-            directionalLight1.shadow.camera.top = 6;
-            directionalLight1.shadow.camera.bottom = -6;
-            scene.add(directionalLight1);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
 
-            const directionalLight2 = new THREE.DirectionalLight(0xaaddff, 0.3); 
-            directionalLight2.position.set(-5, 5, -8);
-            scene.add(directionalLight2);
+            const pointLight1 = new THREE.PointLight(0xffffff, 0.4);
+            pointLight1.position.set(-5, 5, 5);
+            scene.add(pointLight1);
 
-            const pointLight = new THREE.PointLight(0xadd8e6, 0.1); 
-            pointLight.position.set(0, 0, 7);
-            scene.add(pointLight);
+            const pointLight2 = new THREE.PointLight(0xf39c12, 0.2);
+            pointLight2.position.set(5, -5, -5);
+            scene.add(pointLight2);
 
-            createGroundPlane();
-            createHelmet();
-            createComponents(); 
-            createWiring(); 
+            // Ground plane
+            createGround();
+            
+            // Create realistic helmet
+            createRealisticHelmet();
+            
+            // Add smart components
+            createSmartComponents();
 
+            // Hide loading screen
             document.getElementById('loading').style.display = 'none';
+
+            // Start animation
             animate();
         }
 
-        function createGroundPlane() {
-            const planeRadius = 2.0; // Larger radius for more substantial ground
-            const planeGeometry = new THREE.CircleGeometry(planeRadius, 64); 
-            const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x222a3b, roughness: 0.9, metalness: 0.1 });
-            groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
-            groundPlane.rotation.x = -Math.PI / 2;
-            groundPlane.receiveShadow = true;
-            scene.add(groundPlane);
-            
-            // The helmet's base will be at Y=0, so the ground plane should be there too
-            groundPlane.position.y = 0; 
+        function createGround() {
+            const groundGeometry = new THREE.CircleGeometry(5, 32);
+            const groundMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x34495e,
+                transparent: true,
+                opacity: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1;
+            ground.receiveShadow = true;
+            scene.add(ground);
         }
 
-        function createHelmet() {
+        function createRealisticHelmet() {
             helmet = new THREE.Group();
 
+            // Main helmet body - realistic construction helmet shape
+            const helmetBody = createHelmetBody();
+            helmet.add(helmetBody);
+
+            // Helmet brim - proper construction helmet brim
+            const brim = createHelmetBrim();
+            helmet.add(brim);
+
+            // Suspension system inside
+            const suspension = createSuspensionSystem();
+            helmet.add(suspension);
+
+            // Adjustment knob at back
+            const adjustmentKnob = createAdjustmentKnob();
+            helmet.add(adjustmentKnob);
+
+            // Chin strap attachment points
+            const strapAttachments = createStrapAttachments();
+            helmet.add(strapAttachments);
+
+            scene.add(helmet);
+        }
+
+        function createHelmetBody() {
+            // Create the main dome shape using a custom geometry
+            const helmetGroup = new THREE.Group();
+
+            // Main dome - flatter on top like real hard hats
+            const domeGeometry = new THREE.SphereGeometry(1.1, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.7);
             const helmetMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0xE65100, // Deep industrial orange
+                color: 0xFFEB3B, // Bright yellow like construction helmets
                 metalness: 0.1,
-                roughness: 0.5,
+                roughness: 0.3,
                 clearcoat: 0.8,
                 clearcoatRoughness: 0.2,
-                transparent: true,
-                opacity: 0.98,
+                transparent: false,
                 side: THREE.FrontSide
             });
-
-            // 1. Main Dome (a combination of shapes for the hard hat look)
-            const topSphereRadius = 0.9;
-            const topSphereGeometry = new THREE.SphereGeometry(topSphereRadius, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2); // Top half
-            const topSphere = new THREE.Mesh(topSphereGeometry, helmetMaterial);
-            topSphere.position.y = 0.2; // Move slightly up
-
-            const lowerCylinderRadius = 1.0;
-            const lowerCylinderHeight = 0.8;
-            const lowerCylinderGeometry = new THREE.CylinderGeometry(lowerCylinderRadius, lowerCylinderRadius, lowerCylinderHeight, 64, 1, false, 0, Math.PI * 2);
-            const lowerCylinder = new THREE.Mesh(lowerCylinderGeometry, helmetMaterial);
-            lowerCylinder.position.y = -0.2; // Position to connect with sphere
-
-            // Inner padding (defines thickness) - Create a slightly smaller version for the inside
-            const innerPaddingMaterial = new THREE.MeshStandardMaterial({
-                color: 0x444444, 
-                side: THREE.BackSide, 
-                metalness: 0.1,
-                roughness: 0.8
-            });
-            const innerTopSphere = new THREE.Mesh(new THREE.SphereGeometry(topSphereRadius * 0.9, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2), innerPaddingMaterial);
-            innerTopSphere.position.y = 0.15; // Slightly lower than outer topSphere
-
-            const innerLowerCylinder = new THREE.Mesh(new THREE.CylinderGeometry(lowerCylinderRadius * 0.9, lowerCylinderRadius * 0.9, lowerCylinderHeight * 0.9, 64, 1, false, 0, Math.PI * 2), innerPaddingMaterial);
-            innerLowerCylinder.position.y = -0.25; // Slightly lower than outer cylinder
-
-            helmet.add(topSphere, lowerCylinder, innerTopSphere, innerLowerCylinder); // Add these parts to the helmet group
-
-
-            // 2. Brim - more integrated, sharper, slightly downturned
-            const brimShape = new THREE.Shape();
-            brimShape.moveTo(-1.2, 0);
-            brimShape.quadraticCurveTo(-1.3, -0.4, -0.6, -0.6);
-            brimShape.lineTo(0.6, -0.6);
-            brimShape.quadraticCurveTo(1.3, -0.4, 1.2, 0); // This creates the outer edge of the brim
-            brimShape.lineTo(0.9, 0); // Inner point
-            brimShape.quadraticCurveTo(1.0, -0.3, 0.5, -0.4);
-            brimShape.lineTo(-0.5, -0.4);
-            brimShape.quadraticCurveTo(-1.0, -0.3, -0.9, 0); // Inner edge of the brim, creating the hole
             
+            const dome = new THREE.Mesh(domeGeometry, helmetMaterial);
+            dome.position.y = 0.1;
+            dome.castShadow = true;
+            dome.receiveShadow = true;
+            helmetGroup.add(dome);
+
+            // Flatten the top slightly
+            const topCapGeometry = new THREE.CylinderGeometry(0.8, 0.9, 0.2, 32);
+            const topCap = new THREE.Mesh(topCapGeometry, helmetMaterial);
+            topCap.position.y = 0.7;
+            helmetGroup.add(topCap);
+
+            // Add subtle ridges for strength (like real helmets)
+            for (let i = 0; i < 4; i++) {
+                const ridgeGeometry = new THREE.BoxGeometry(0.02, 0.02, 1.8);
+                const ridgeMaterial = new THREE.MeshPhysicalMaterial({
+                    color: 0xF57F17, // Slightly darker yellow
+                    metalness: 0.1,
+                    roughness: 0.4
+                });
+                const ridge = new THREE.Mesh(ridgeGeometry, ridgeMaterial);
+                const angle = (i / 4) * Math.PI * 2;
+                ridge.position.x = Math.cos(angle) * 0.9;
+                ridge.position.z = Math.sin(angle) * 0.9;
+                ridge.position.y = 0.2;
+                ridge.rotation.y = angle;
+                ridge.rotation.x = -Math.PI / 6;
+                helmetGroup.add(ridge);
+            }
+
+            return helmetGroup;
+        }
+
+        function createHelmetBrim() {
+            // Realistic brim shape
+            const brimShape = new THREE.Shape();
+            
+            // Outer edge
+            const outerRadius = 1.4;
+            const innerRadius = 1.05;
+            
+            // Create brim outline
+            for (let i = 0; i <= 32; i++) {
+                const angle = (i / 32) * Math.PI * 2;
+                const x = Math.cos(angle) * outerRadius;
+                const y = Math.sin(angle) * outerRadius;
+                if (i === 0) {
+                    brimShape.moveTo(x, y);
+                } else {
+                    brimShape.lineTo(x, y);
+                }
+            }
+            
+            // Inner hole
+            const hole = new THREE.Path();
+            for (let i = 0; i <= 32; i++) {
+                const angle = (i / 32) * Math.PI * 2;
+                const x = Math.cos(angle) * innerRadius;
+                const y = Math.sin(angle) * innerRadius;
+                if (i === 0) {
+                    hole.moveTo(x, y);
+                } else {
+                    hole.lineTo(x, y);
+                }
+            }
+            brimShape.holes.push(hole);
+
             const extrudeSettings = {
                 steps: 1,
-                depth: 0.1, // Brim thickness
+                depth: 0.05,
                 bevelEnabled: true,
-                bevelThickness: 0.02,
-                bevelSize: 0.02,
-                bevelOffset: 0,
-                bevelSegments: 4
+                bevelThickness: 0.01,
+                bevelSize: 0.01,
+                bevelSegments: 2
             };
+
             const brimGeometry = new THREE.ExtrudeGeometry(brimShape, extrudeSettings);
             const brimMaterial = new THREE.MeshPhysicalMaterial({
-                color: 0xBF360C, // Darker, more muted orange
+                color: 0xFFEB3B,
                 metalness: 0.1,
-                roughness: 0.6,
+                roughness: 0.4,
                 clearcoat: 0.6,
                 clearcoatRoughness: 0.3
             });
+
             const brim = new THREE.Mesh(brimGeometry, brimMaterial);
             brim.rotation.x = -Math.PI / 2;
-            brim.position.y = -0.5; // Position it below the helmet's main body
-            brim.position.z = 1.0; // Bring it forward from the center of the helmet
-            brim.scale.set(1.0, 1.2, 1.0); // Make it slightly elliptical for a more realistic brim shape
+            brim.position.y = -0.4;
             brim.castShadow = true;
-            helmet.add(brim);
+            brim.receiveShadow = true;
 
-            // 3. Chin Strap - simplified
-            const strapMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e, metalness: 0.1, roughness: 0.8 });
-            const chinStrapGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8); // Simple cylinder for strap
-            
-            const strapL = new THREE.Mesh(chinStrapGeometry, strapMaterial);
-            strapL.position.set(-0.7, -0.7, 0.5);
-            strapL.rotation.z = Math.PI / 4;
-            helmet.add(strapL);
-
-            const strapR = new THREE.Mesh(chinStrapGeometry, strapMaterial);
-            strapR.position.set(0.7, -0.7, 0.5);
-            strapR.rotation.z = -Math.PI / 4;
-            helmet.add(strapR);
-
-            // Add subtle top ridges/vents (as part of helmet structure)
-            const ridgeMaterial = new THREE.MeshStandardMaterial({ color: 0xF27036, metalness: 0.1, roughness: 0.5 });
-            const ridgeHeight = 0.03;
-            const ridgeRadius = 0.8; // Smaller radius for the ridges
-
-            for (let i = 0; i < 4; i++) {
-                const angle = i * Math.PI / 2;
-                const x = ridgeRadius * Math.cos(angle);
-                const z = ridgeRadius * Math.sin(angle);
-                const ridgeGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
-                const ridge = new THREE.Mesh(ridgeGeometry, ridgeMaterial);
-                ridge.position.set(x, 0.6 + ridgeHeight / 2, z); // Position on top of the dome
-                ridge.rotation.y = angle;
-                ridge.rotation.z = Math.PI / 2;
-                helmet.add(ridge);
-            }
-
-            scene.add(helmet);
-            
-            // Adjust helmet position relative to ground plane
-            // Lowest point of helmet after combining shapes is around -0.6 to -0.7 relative to its group center (Y=0)
-            helmet.position.y = 0.65; // Lift the helmet so its lowest point rests on Y=0 of the ground plane
+            return brim;
         }
 
-        function createComponents() {
-            // Camera Lens & LED integrated directly onto the helmet's front
-            const cameraLensRadius = 0.08;
-            const cameraLensDepth = 0.03;
-            const cameraLensColor = 0x0a0a0a;
+        function createSuspensionSystem() {
+            const suspensionGroup = new THREE.Group();
+            
+            // Inner suspension band
+            const bandGeometry = new THREE.TorusGeometry(0.8, 0.02, 8, 32);
+            const bandMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                metalness: 0.1,
+                roughness: 0.8
+            });
+            const band = new THREE.Mesh(bandGeometry, bandMaterial);
+            band.position.y = -0.2;
+            suspensionGroup.add(band);
 
-            // Main camera lens
-            const lensGeometry = new THREE.CylinderGeometry(cameraLensRadius, cameraLensRadius, cameraLensDepth, 32);
-            const lensMaterial = new THREE.MeshStandardMaterial({ color: cameraLensColor, metalness: 0.9, roughness: 0.1 });
-            const cameraLens = new THREE.Mesh(lensGeometry, lensMaterial);
-            cameraLens.rotation.x = Math.PI / 2;
-            cameraLens.position.set(0, 0.0, 1.05); // Position directly on the helmet's front surface
-            helmet.add(cameraLens);
+            // Suspension straps
+            for (let i = 0; i < 6; i++) {
+                const strapGeometry = new THREE.BoxGeometry(0.03, 0.3, 0.01);
+                const strapMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
+                const strap = new THREE.Mesh(strapGeometry, strapMaterial);
+                const angle = (i / 6) * Math.PI * 2;
+                strap.position.x = Math.cos(angle) * 0.8;
+                strap.position.z = Math.sin(angle) * 0.8;
+                strap.position.y = 0.1;
+                strap.rotation.y = angle;
+                suspensionGroup.add(strap);
+            }
 
-            // Inner reflective part of the lens
-            const innerLensGeometry = new THREE.CylinderGeometry(cameraLensRadius * 0.8, cameraLensRadius * 0.8, cameraLensDepth * 0.5, 32);
-            const innerLensMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.95, roughness: 0.05, envMap: scene.environment });
-            const innerLens = new THREE.Mesh(innerLensGeometry, innerLensMaterial);
-            innerLens.position.z = cameraLensDepth * 0.5; // Slightly recessed
-            cameraLens.add(innerLens); // Add to the main lens object
+            return suspensionGroup;
+        }
 
-            // RGB LED Status Light - beside the camera lens
-            const ledGeometry = new THREE.SphereGeometry(0.03, 16, 16); 
+        function createAdjustmentKnob() {
+            const knobGroup = new THREE.Group();
+            
+            // Main adjustment wheel
+            const wheelGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
+            const wheelMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                metalness: 0.2,
+                roughness: 0.6
+            });
+            const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+            wheel.rotation.x = Math.PI / 2;
+            wheel.position.set(0, -0.2, -1.0);
+            knobGroup.add(wheel);
+
+            // Adjustment mechanism
+            const mechGeometry = new THREE.BoxGeometry(0.15, 0.06, 0.08);
+            const mechMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
+            const mechanism = new THREE.Mesh(mechGeometry, mechMaterial);
+            mechanism.position.set(0, -0.2, -0.95);
+            knobGroup.add(mechanism);
+
+            return knobGroup;
+        }
+
+        function createStrapAttachments() {
+            const attachmentGroup = new THREE.Group();
+            
+            // Left and right strap attachment points
+            for (let side of [-1, 1]) {
+                const attachGeometry = new THREE.BoxGeometry(0.04, 0.06, 0.02);
+                const attachMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+                const attachment = new THREE.Mesh(attachGeometry, attachMaterial);
+                attachment.position.set(side * 1.0, -0.3, 0.3);
+                attachmentGroup.add(attachment);
+
+                // Strap clips
+                const clipGeometry = new THREE.RingGeometry(0.02, 0.03, 8);
+                const clipMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
+                const clip = new THREE.Mesh(clipGeometry, clipMaterial);
+                clip.position.set(side * 1.0, -0.35, 0.3);
+                clip.rotation.x = Math.PI / 2;
+                attachmentGroup.add(clip);
+            }
+
+            return attachmentGroup;
+        }
+
+        function createSmartComponents() {
+            // Front-mounted camera module
+            const cameraHousingGeometry = new THREE.BoxGeometry(0.25, 0.15, 0.12);
+            const cameraHousingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                metalness: 0.2,
+                roughness: 0.6
+            });
+            cameraModule = new THREE.Mesh(cameraHousingGeometry, cameraHousingMaterial);
+            cameraModule.position.set(0, 0.1, 1.05);
+            cameraModule.castShadow = true;
+            helmet.add(cameraModule);
+
+            // Camera lens
+            const lensGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16);
+            const lensMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x000000,
+                metalness: 0.9,
+                roughness: 0.1
+            });
+            const lens = new THREE.Mesh(lensGeometry, lensMaterial);
+            lens.position.set(0, 0, 0.08);
+            lens.rotation.x = Math.PI / 2;
+            cameraModule.add(lens);
+
+            // RGB LED status indicator
+            const ledGeometry = new THREE.SphereGeometry(0.04, 16, 16);
             const ledMaterial = new THREE.MeshPhongMaterial({
                 color: 0xff0000,
                 emissive: 0xff0000,
                 emissiveIntensity: 0.5
             });
             ledLight = new THREE.Mesh(ledGeometry, ledMaterial);
-            ledLight.position.set(0.18, 0.0, 1.0); // Position to the right of the lens
-            helmet.add(ledLight); 
+            ledLight.position.set(0.15, 0.1, 1.0);
+            helmet.add(ledLight);
 
-            // GPS Module (flatter, more integrated into top)
-            const gpsGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.3); 
-            const gpsMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50, metalness: 0.1, roughness: 0.5 }); 
+            // GPS module on top
+            const gpsGeometry = new THREE.BoxGeometry(0.2, 0.04, 0.2);
+            const gpsMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3498db,
+                metalness: 0.1,
+                roughness: 0.5
+            });
             gpsModule = new THREE.Mesh(gpsGeometry, gpsMaterial);
-            gpsModule.position.set(0, 0.95, 0); // Position on the flatter top of the helmet
+            gpsModule.position.set(0, 0.85, 0);
             helmet.add(gpsModule);
 
-            // GPS Antenna (sturdy, small)
-            const antennaGeometry = new THREE.CylinderGeometry(0.007, 0.007, 0.15, 8); 
-            const antennaMaterial = new THREE.MeshStandardMaterial({ color: 0x607d8b });
+            // GPS antenna
+            const antennaGeometry = new THREE.CylinderGeometry(0.005, 0.005, 0.2, 8);
+            const antennaMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
             const antenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
-            antenna.position.set(0, 0.95 + 0.15 / 2 + 0.02, 0); // Above the GPS module
+            antenna.position.set(0, 0.95, 0);
             helmet.add(antenna);
 
-            // External Battery Pack (ruggedized, compact, at the very back base)
-            const batteryGeometry = new THREE.BoxGeometry(0.5, 0.25, 0.2); 
-            const batteryMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.2, roughness: 0.6 }); 
+            // External battery pack (realistic placement)
+            const batteryGeometry = new THREE.BoxGeometry(0.6, 0.3, 0.15);
+            const batteryMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                metalness: 0.1,
+                roughness: 0.7
+            });
             batteryPack = new THREE.Mesh(batteryGeometry, batteryMaterial);
-            batteryPack.position.set(0, -0.6, -0.9); // Position at the lower back of the helmet
+            batteryPack.position.set(0, -0.1, -1.1);
             batteryPack.castShadow = true;
             helmet.add(batteryPack);
 
-            // Battery label recess
-            const labelRecessGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.01);
-            const labelRecessMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-            const labelRecess = new THREE.Mesh(labelRecessGeometry, labelRecessMaterial);
-            labelRecess.position.set(0, 0, 0.101); 
-            batteryPack.add(labelRecess);
+            // Battery status indicator
+            const batteryLEDGeometry = new THREE.BoxGeometry(0.4, 0.05, 0.02);
+            const batteryLEDMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x27ae60,
+                emissive: 0x27ae60,
+                emissiveIntensity: 0.3
+            });
+            const batteryLED = new THREE.Mesh(batteryLEDGeometry, batteryLEDMaterial);
+            batteryLED.position.set(0, 0.05, 0.08);
+            batteryPack.add(batteryLED);
 
-            // Charging Port
-            const chargePortGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 16);
-            const chargePortMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.8 });
-            const chargePort = new THREE.Mesh(chargePortGeometry, chargePortMaterial);
-            chargePort.position.set(0.15, -0.08, 0.1); 
-            chargePort.rotation.x = Math.PI / 2;
-            batteryPack.add(chargePort);
+            // Power button (side mounted)
+            const buttonHousingGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.08, 16);
+            const buttonHousingMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            const buttonHousing = new THREE.Mesh(buttonHousingGeometry, buttonHousingMaterial);
+            buttonHousing.position.set(1.05, 0, 0.2);
+            buttonHousing.rotation.z = Math.PI / 2;
+            helmet.add(buttonHousing);
 
-            // Power Button (Dedicated, on the other side of the helmet, lower and more accessible)
-            const powerButtonHousingGeometry = new THREE.BoxGeometry(0.12, 0.35, 0.18); 
-            const powerButtonHousingMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.7 });
-            const powerButtonHousing = new THREE.Mesh(powerButtonHousingGeometry, powerButtonHousingMaterial);
-            powerButtonHousing.position.set(-1.15, -0.3, 0.5); // Position on left side, lower, slightly forward
-            powerButtonHousing.rotation.z = -Math.PI / 2; 
-            helmet.add(powerButtonHousing);
+            const buttonGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16);
+            const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+            powerButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
+            powerButton.position.set(0.02, 0, 0);
+            buttonHousing.add(powerButton);
 
-            const buttonGeometry = new THREE.CylinderGeometry(0.09, 0.09, 0.08, 24); 
-            const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c, metalness: 0.1, roughness: 0.4 });
-            powerButton = new THREE.Mesh(buttonGeometry, buttonMaterial); 
-            powerButton.position.set(0, 0, 0.045); 
-            powerButtonHousing.add(powerButton); 
+            // Connecting wires (simplified)
+            createWiring();
         }
 
         function createWiring() {
-            const conduitMaterial = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.6 }); 
-            const conduitRadius = 0.015; 
-
-            // Wire from Camera to Battery (curved path, starts from camera lens position)
-            // Note: Camera lens is now directly on helmet, so adjust start point
-            const cameraConnectPoint = new THREE.Vector3(0.0, 0.0, 1.0); // A point near the camera on the helmet surface
-            cameraConnectPoint.applyMatrix4(helmet.matrixWorld); // Transform to world space if needed, otherwise relative to helmet
-
-            const batteryConnectPoint = new THREE.Vector3(batteryPack.position.x - 0.2, batteryPack.position.y + 0.05, batteryPack.position.z + 0.08);
-
-            const curve1 = new THREE.CatmullRomCurve3([
-                cameraConnectPoint.clone().sub(helmet.position), // Convert to helmet local space
-                new THREE.Vector3(-0.4, -0.3, 0.8),
-                new THREE.Vector3(-0.5, -0.4, -0.5),
-                batteryConnectPoint.clone().sub(helmet.position) // Convert to helmet local space
-            ]);
-            const wireGeometry1 = new THREE.TubeGeometry(curve1, 64, conduitRadius, 8, false);
-            const wire1 = new THREE.Mesh(wireGeometry1, conduitMaterial);
+            const wireMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
+            
+            // Wire from camera to battery
+            const wire1Geometry = new THREE.CylinderGeometry(0.008, 0.008, 1.2, 8);
+            const wire1 = new THREE.Mesh(wire1Geometry, wireMaterial);
+            wire1.position.set(0.3, -0.2, 0);
+            wire1.rotation.z = Math.PI / 3;
             helmet.add(wire1);
 
-            // Wire from GPS to Battery (curved path, starts from GPS module position)
-            const gpsConnectPoint = new THREE.Vector3(0, 0.9, 0); // Approximate center of GPS module
-            const batteryConnectPoint2 = new THREE.Vector3(batteryPack.position.x + 0.2, batteryPack.position.y + 0.05, batteryPack.position.z + 0.08);
-            
-            const curve2 = new THREE.CatmullRomCurve3([
-                gpsConnectPoint.clone().sub(helmet.position),
-                new THREE.Vector3(0.5, 0.6, -0.2),
-                new THREE.Vector3(0.3, 0.2, -0.8),
-                batteryConnectPoint2.clone().sub(helmet.position)
-            ]);
-            const wireGeometry2 = new THREE.TubeGeometry(curve2, 64, conduitRadius, 8, false);
-            const wire2 = new THREE.Mesh(wireGeometry2, conduitMaterial);
+            // Wire from GPS to battery
+            const wire2Geometry = new THREE.CylinderGeometry(0.008, 0.008, 1.0, 8);
+            const wire2 = new THREE.Mesh(wire2Geometry, wireMaterial);
+            wire2.position.set(-0.2, 0.3, -0.4);
+            wire2.rotation.x = Math.PI / 4;
             helmet.add(wire2);
         }
 
@@ -639,14 +651,15 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
             requestAnimationFrame(animate);
 
             if (isRotating) {
-                helmet.rotation.y += 0.004; 
+                helmet.rotation.y += 0.008;
             }
 
+            // Animate LED based on power status
             if (isPoweredOn) {
                 const time = Date.now() * 0.003;
-                ledLight.material.emissiveIntensity = Math.sin(time * 2) * 0.15 + 0.85; 
+                ledLight.material.emissiveIntensity = Math.sin(time) * 0.3 + 0.7;
             } else {
-                ledLight.material.emissiveIntensity = 0.15; 
+                ledLight.material.emissiveIntensity = 0.2;
             }
 
             renderer.render(scene, camera);
@@ -654,71 +667,69 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
 
         function togglePower() {
             isPoweredOn = !isPoweredOn;
-            const powerBtnHTML = document.getElementById('powerBtn'); 
-
+            const powerBtn = document.getElementById('powerBtn');
             const gpsStatus = document.getElementById('gpsStatus');
             const cameraStatus = document.getElementById('cameraStatus');
             const wifiStatus = document.getElementById('wifiStatus');
             const batteryStatus = document.getElementById('batteryStatus');
 
             if (isPoweredOn) {
-                powerBtnHTML.textContent = '🔌 POWER ON';
-                powerBtnHTML.classList.add('on');
-                powerButton.material.color.setHex(0x28a745); 
-                ledLight.material.emissiveIntensity = 0.5; 
-
+                powerBtn.textContent = '🔌 POWER ON';
+                powerBtn.classList.add('on');
+                powerButton.material.color.setHex(0x27ae60);
+                
+                // Boot sequence
                 setTimeout(() => {
-                    updateStatus(1); 
+                    updateStatus(1); // Ready (Yellow)
                     gpsStatus.textContent = 'Acquiring Signal...';
-                    cameraStatus.textContent = 'Initializing AI...';
-                    wifiStatus.textContent = 'Scanning Networks...';
-                }, 800); 
-
+                    cameraStatus.textContent = 'Initializing...';
+                    wifiStatus.textContent = 'Scanning...';
+                }, 500);
+                
                 setTimeout(() => {
-                    updateStatus(2); 
-                    gpsStatus.textContent = 'GPS Locked (RTK Active)'; 
-                    cameraStatus.textContent = 'Recording (AI Analyzing)'; 
-                    wifiStatus.textContent = 'Connected to Site-Mesh Network'; 
-                    batteryStatus.textContent = '80% (Active)'; 
-                }, 2500); 
-
+                    updateStatus(2); // Connected (Green)
+                    gpsStatus.textContent = 'GPS Locked';
+                    cameraStatus.textContent = 'Recording';
+                    wifiStatus.textContent = 'Connected';
+                    batteryStatus.textContent = '80% (Active)';
+                }, 2000);
+                
             } else {
-                powerBtnHTML.textContent = '🔌 POWER OFF';
-                powerBtnHTML.classList.remove('on');
-                powerButton.material.color.setHex(0xe74c3c); 
-                updateStatus(0); 
+                powerBtn.textContent = '🔌 POWER OFF';
+                powerBtn.classList.remove('on');
+                powerButton.material.color.setHex(0xe74c3c);
+                updateStatus(0); // Disconnected (Red)
                 gpsStatus.textContent = 'No Signal';
-                cameraStatus.textContent = 'Inactive';
+                cameraStatus.textContent = 'Standby';
                 wifiStatus.textContent = 'Disconnected';
-                batteryStatus.textContent = '85% (Idle)'; 
+                batteryStatus.textContent = '85%';
             }
         }
 
         function updateStatus(mode) {
             statusMode = mode;
             const statusDisplay = document.getElementById('statusDisplay');
-
+            
             switch(mode) {
-                case 0: 
-                    ledLight.material.color.setHex(0xff0000);
-                    ledLight.material.emissive.setHex(0xff0000);
+                case 0: // Disconnected
+                    ledLight.material.color.setHex(0xe74c3c);
+                    ledLight.material.emissive.setHex(0xe74c3c);
                     statusDisplay.className = 'status-item status-disconnected';
-                    statusDisplay.innerHTML = '<span class="led-indicator led-red"></span><span>SYSTEM OFFLINE</span>';
+                    statusDisplay.innerHTML = '<span class="led-indicator led-red"></span><span>System Offline</span>';
                     break;
-                case 1: 
-                    ledLight.material.color.setHex(0xffff00);
-                    ledLight.material.emissive.setHex(0xffff00);
+                case 1: // Ready
+                    ledLight.material.color.setHex(0xf39c12);
+                    ledLight.material.emissive.setHex(0xf39c12);
                     statusDisplay.className = 'status-item status-ready';
-                    statusDisplay.innerHTML = '<span class="led-indicator led-yellow"></span><span>INITIALIZING SYSTEMS...</span>';
+                    statusDisplay.innerHTML = '<span class="led-indicator led-yellow"></span><span>Ready to Connect</span>';
                     break;
-                case 2: 
-                    ledLight.material.color.setHex(0x00ff00);
-                    ledLight.material.emissive.setHex(0x00ff00);
+                case 2: // Connected
+                    ledLight.material.color.setHex(0x27ae60);
+                    ledLight.material.emissive.setHex(0x27ae60);
                     statusDisplay.className = 'status-item status-connected';
-                    statusDisplay.innerHTML = '<span class="led-indicator led-green"></span><span>OPERATIONAL & RECORDING</span>';
+                    statusDisplay.innerHTML = '<span class="led-indicator led-green"></span><span>Connected & Recording</span>';
                     break;
             }
-            ledLight.material.emissiveIntensity = isPoweredOn ? 0.85 : 0.15; 
         }
 
         function toggleRotation() {
@@ -726,24 +737,25 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
         }
 
         function resetView() {
-            camera.position.set(2, 2, 4);
+            camera.position.set(3, 2, 4);
+            camera.lookAt(0, 0, 0);
             helmet.rotation.set(0, 0, 0);
-            isRotating = true; 
         }
 
         function toggleWireframe() {
             isWireframe = !isWireframe;
-            scene.traverse((object) => { 
-                if (object.isMesh) {
-                    if (Array.isArray(object.material)) {
-                        object.material.forEach(mat => { if (mat.wireframe !== undefined) mat.wireframe = isWireframe; });
+            helmet.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.wireframe = isWireframe);
                     } else {
-                        if (object.material.wireframe !== undefined) object.material.wireframe = isWireframe;
+                        child.material.wireframe = isWireframe;
                     }
                 }
             });
         }
 
+        // Mouse controls
         let mouseX = 0, mouseY = 0;
         let isMouseDown = false;
 
@@ -751,22 +763,21 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
             if (isMouseDown) {
                 const deltaX = event.clientX - mouseX;
                 const deltaY = event.clientY - mouseY;
-
-                helmet.rotation.y += deltaX * 0.005; 
-                helmet.rotation.x += deltaY * 0.005;
-
-                helmet.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, helmet.rotation.x));
-
+                
+                helmet.rotation.y += deltaX * 0.01;
+                helmet.rotation.x += deltaY * 0.01;
+                
+                // Clamp vertical rotation
+                helmet.rotation.x = Math.max(-Math.PI/3, Math.min(Math.PI/3, helmet.rotation.x));
+                
                 mouseX = event.clientX;
                 mouseY = event.clientY;
-                isRotating = false; 
             }
         });
 
         document.addEventListener('mousedown', (event) => {
-            const targetElement = event.target;
-            if (targetElement.closest('#info') || targetElement.closest('#controls') || targetElement.closest('#status')) {
-                isMouseDown = false;
+            // Don't rotate if clicking on UI elements
+            if (event.target.closest('#info') || event.target.closest('#controls') || event.target.closest('#status')) {
                 return;
             }
             isMouseDown = true;
@@ -778,56 +789,47 @@ This will be a more significant refactor of the `createHelmet` and `createCompon
             isMouseDown = false;
         });
 
+        // Touch controls for mobile
         let touchStartX = 0, touchStartY = 0;
-        let touchLastX = 0, touchLastY = 0;
 
         document.addEventListener('touchstart', (event) => {
-            const targetElement = event.target;
-            if (targetElement.closest('#info') || targetElement.closest('#controls') || targetElement.closest('#status')) {
-                return; 
+            if (event.target.closest('#info') || event.target.closest('#controls') || event.target.closest('#status')) {
+                return;
             }
-            if (event.touches.length === 1) {
-                touchStartX = event.touches[0].clientX;
-                touchStartY = event.touches[0].clientY;
-                touchLastX = touchStartX;
-                touchLastY = touchStartY;
-                isRotating = false; 
-            }
-        }, { passive: false });
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+        });
 
         document.addEventListener('touchmove', (event) => {
-            if (event.touches.length === 1) {
-                event.preventDefault(); 
-                const currentX = event.touches[0].clientX;
-                const currentY = event.touches[0].clientY;
+            event.preventDefault();
+            const deltaX = event.touches[0].clientX - touchStartX;
+            const deltaY = event.touches[0].clientY - touchStartY;
+            
+            helmet.rotation.y += deltaX * 0.005;
+            helmet.rotation.x += deltaY * 0.005;
+            
+            // Clamp vertical rotation
+            helmet.rotation.x = Math.max(-Math.PI/3, Math.min(Math.PI/3, helmet.rotation.x));
+            
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+        });
 
-                const deltaX = currentX - touchLastX;
-                const deltaY = currentY - touchLastY;
-
-                helmet.rotation.y += deltaX * 0.005;
-                helmet.rotation.x += deltaY * 0.005;
-
-                helmet.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, helmet.rotation.x));
-
-                touchLastX = currentX;
-                touchLastY = currentY;
-            }
-        }, { passive: false });
-
+        // Zoom with mouse wheel
         document.addEventListener('wheel', (event) => {
-            event.preventDefault(); 
-            camera.position.z += event.deltaY * 0.005; 
+            camera.position.z += event.deltaY * 0.01;
             camera.position.z = Math.max(2, Math.min(8, camera.position.z));
-        }, { passive: false });
+        });
 
+        // Window resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        // Initialize the scene
         init();
     </script>
 </body>
 </html>
-```
