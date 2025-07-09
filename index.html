@@ -535,8 +535,8 @@
         }
 
         function createSmartComponents() {
-            // Front-mounted camera module
-            const cameraHousingGeometry = new THREE.BoxGeometry(0.25, 0.15, 0.12);
+            // Front-mounted camera module (wider to accommodate LED)
+            const cameraHousingGeometry = new THREE.BoxGeometry(0.35, 0.15, 0.12);
             const cameraHousingMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x2c3e50,
                 metalness: 0.2,
@@ -547,7 +547,7 @@
             cameraModule.castShadow = true;
             helmet.add(cameraModule);
 
-            // Camera lens
+            // Camera lens (positioned to the left of center)
             const lensGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16);
             const lensMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x000000,
@@ -555,20 +555,32 @@
                 roughness: 0.1
             });
             const lens = new THREE.Mesh(lensGeometry, lensMaterial);
-            lens.position.set(0, 0, 0.08);
+            lens.position.set(-0.08, 0, 0.08); // Moved to left side of housing
             lens.rotation.x = Math.PI / 2;
             cameraModule.add(lens);
 
-            // RGB LED status indicator
-            const ledGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+            // RGB LED status indicator (right next to camera)
+            const ledGeometry = new THREE.SphereGeometry(0.035, 16, 16);
             const ledMaterial = new THREE.MeshPhongMaterial({
                 color: 0xff0000,
                 emissive: 0xff0000,
                 emissiveIntensity: 0.5
             });
             ledLight = new THREE.Mesh(ledGeometry, ledMaterial);
-            ledLight.position.set(0.15, 0.1, 1.0);
-            helmet.add(ledLight);
+            ledLight.position.set(0.08, 0, 0.08); // Right next to the camera lens
+            cameraModule.add(ledLight);
+
+            // LED housing/bezel
+            const ledHousingGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.02, 16);
+            const ledHousingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x34495e,
+                metalness: 0.1,
+                roughness: 0.7
+            });
+            const ledHousing = new THREE.Mesh(ledHousingGeometry, ledHousingMaterial);
+            ledHousing.position.set(0.08, 0, 0.07);
+            ledHousing.rotation.x = Math.PI / 2;
+            cameraModule.add(ledHousing);
 
             // GPS module on top
             const gpsGeometry = new THREE.BoxGeometry(0.2, 0.04, 0.2);
@@ -611,40 +623,99 @@
             batteryLED.position.set(0, 0.05, 0.08);
             batteryPack.add(batteryLED);
 
-            // Power button (side mounted)
-            const buttonHousingGeometry = new THREE.CylinderGeometry(0.06, 0.06, 0.08, 16);
-            const buttonHousingMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            // Power button (prominently placed on the front-right side)
+            const buttonHousingGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.06, 16);
+            const buttonHousingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                metalness: 0.2,
+                roughness: 0.6
+            });
             const buttonHousing = new THREE.Mesh(buttonHousingGeometry, buttonHousingMaterial);
-            buttonHousing.position.set(1.05, 0, 0.2);
-            buttonHousing.rotation.z = Math.PI / 2;
+            buttonHousing.position.set(0.7, 0.2, 0.8);
+            buttonHousing.rotation.z = -Math.PI / 6; // Slight angle for easy access
+            buttonHousing.castShadow = true;
             helmet.add(buttonHousing);
 
-            const buttonGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16);
-            const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+            const buttonGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.04, 16);
+            const buttonMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xe74c3c,
+                metalness: 0.1,
+                roughness: 0.4
+            });
             powerButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
-            powerButton.position.set(0.02, 0, 0);
+            powerButton.position.set(0, 0, 0.02);
             buttonHousing.add(powerButton);
 
-            // Connecting wires (simplified)
+            // Power button label/icon
+            const buttonLabelGeometry = new THREE.RingGeometry(0.03, 0.04, 16);
+            const buttonLabelMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                side: THREE.DoubleSide
+            });
+            const buttonLabel = new THREE.Mesh(buttonLabelGeometry, buttonLabelMaterial);
+            buttonLabel.position.set(0, 0, 0.025);
+            powerButton.add(buttonLabel);
+
+            // ON/OFF text indicator
+            const textGeometry = new THREE.PlaneGeometry(0.15, 0.03);
+            const textMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+            const textLabel = new THREE.Mesh(textGeometry, textMaterial);
+            textLabel.position.set(0, -0.06, 0.04);
+            buttonHousing.add(textLabel);
+
+            // Add labels to camera module
+            const cameraLabelGeometry = new THREE.PlaneGeometry(0.25, 0.04);
+            const cameraLabelMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.9
+            });
+            const cameraLabel = new THREE.Mesh(cameraLabelGeometry, cameraLabelMaterial);
+            cameraLabel.position.set(0, -0.08, 0.08);
+            cameraModule.add(cameraLabel);
+
+            // Connecting wires (simplified but realistic)
             createWiring();
         }
 
         function createWiring() {
             const wireMaterial = new THREE.MeshStandardMaterial({ color: 0x34495e });
             
-            // Wire from camera to battery
-            const wire1Geometry = new THREE.CylinderGeometry(0.008, 0.008, 1.2, 8);
-            const wire1 = new THREE.Mesh(wire1Geometry, wireMaterial);
-            wire1.position.set(0.3, -0.2, 0);
-            wire1.rotation.z = Math.PI / 3;
-            helmet.add(wire1);
+            // Main power cable from button to battery (more visible routing)
+            const powerCableGeometry = new THREE.CylinderGeometry(0.012, 0.012, 1.5, 8);
+            const powerCable = new THREE.Mesh(powerCableGeometry, wireMaterial);
+            powerCable.position.set(0.3, -0.1, -0.2);
+            powerCable.rotation.z = Math.PI / 4;
+            helmet.add(powerCable);
 
-            // Wire from GPS to battery
-            const wire2Geometry = new THREE.CylinderGeometry(0.008, 0.008, 1.0, 8);
-            const wire2 = new THREE.Mesh(wire2Geometry, wireMaterial);
-            wire2.position.set(-0.2, 0.3, -0.4);
-            wire2.rotation.x = Math.PI / 4;
-            helmet.add(wire2);
+            // Camera data cable
+            const dataCableGeometry = new THREE.CylinderGeometry(0.008, 0.008, 1.0, 8);
+            const dataCable = new THREE.Mesh(dataCableGeometry, wireMaterial);
+            dataCable.position.set(0.2, -0.2, 0.2);
+            dataCable.rotation.z = Math.PI / 3;
+            helmet.add(dataCable);
+
+            // GPS antenna cable
+            const gpsCableGeometry = new THREE.CylinderGeometry(0.006, 0.006, 0.8, 8);
+            const gpsCable = new THREE.Mesh(gpsCableGeometry, wireMaterial);
+            gpsCable.position.set(-0.1, 0.2, -0.3);
+            gpsCable.rotation.x = Math.PI / 4;
+            helmet.add(gpsCable);
+
+            // Cable management clips
+            for (let i = 0; i < 3; i++) {
+                const clipGeometry = new THREE.BoxGeometry(0.02, 0.01, 0.03);
+                const clipMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+                const clip = new THREE.Mesh(clipGeometry, clipMaterial);
+                clip.position.set(0.2 + i * 0.1, -0.3, 0.5 - i * 0.2);
+                helmet.add(clip);
+            }
         }
 
         function animate() {
@@ -674,35 +745,42 @@
             const batteryStatus = document.getElementById('batteryStatus');
 
             if (isPoweredOn) {
-                powerBtn.textContent = '🔌 POWER ON';
+                powerBtn.textContent = '🔌 SYSTEM ON';
                 powerBtn.classList.add('on');
+                
+                // Animate the physical button being pressed
                 powerButton.material.color.setHex(0x27ae60);
+                powerButton.position.z = -0.01; // Button pressed in
                 
                 // Boot sequence
                 setTimeout(() => {
                     updateStatus(1); // Ready (Yellow)
                     gpsStatus.textContent = 'Acquiring Signal...';
-                    cameraStatus.textContent = 'Initializing...';
-                    wifiStatus.textContent = 'Scanning...';
+                    cameraStatus.textContent = 'Camera Initializing...';
+                    wifiStatus.textContent = 'Scanning Networks...';
                 }, 500);
                 
                 setTimeout(() => {
                     updateStatus(2); // Connected (Green)
-                    gpsStatus.textContent = 'GPS Locked';
-                    cameraStatus.textContent = 'Recording';
-                    wifiStatus.textContent = 'Connected';
-                    batteryStatus.textContent = '80% (Active)';
-                }, 2000);
+                    gpsStatus.textContent = 'GPS Locked (3D Fix)';
+                    cameraStatus.textContent = 'Recording Active';
+                    wifiStatus.textContent = 'Connected to Site-WiFi';
+                    batteryStatus.textContent = '80% (Active Mode)';
+                }, 2500);
                 
             } else {
-                powerBtn.textContent = '🔌 POWER OFF';
+                powerBtn.textContent = '🔌 SYSTEM OFF';
                 powerBtn.classList.remove('on');
+                
+                // Reset button appearance
                 powerButton.material.color.setHex(0xe74c3c);
+                powerButton.position.z = 0.02; // Button released
+                
                 updateStatus(0); // Disconnected (Red)
                 gpsStatus.textContent = 'No Signal';
                 cameraStatus.textContent = 'Standby';
                 wifiStatus.textContent = 'Disconnected';
-                batteryStatus.textContent = '85%';
+                batteryStatus.textContent = '85% (Idle)';
             }
         }
 
